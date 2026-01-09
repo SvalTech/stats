@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>sval.tech Dashboard</title>
+    <title>sval.tech | Focus Mode</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -15,586 +15,688 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Markdown Parser (for AI response) -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bg: '#09090b', // Zinc 950
+                        surface: '#18181b', // Zinc 900
+                        surfaceHighlight: '#27272a', // Zinc 800
+                        primary: '#6366f1', // Indigo 500
+                        secondary: '#a855f7', // Purple 500
+                        accent: '#22d3ee', // Cyan 400
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
 
     <style>
-        :root {
-            --bg-dark: #0f111a; /* Obsidian base */
-            --card-dark: #1a1d2d;
-            --accent-primary: #818cf8; /* Indigo 400 */
-            --accent-secondary: #c084fc; /* Purple 400 */
-            --text-primary: #e2e8f0;
-            --text-secondary: #94a3b8;
-            --success: #34d399;
-            --warning: #fbbf24;
-            --danger: #f87171;
-        }
-
         body {
-            background-color: var(--bg-dark);
-            color: var(--text-primary);
-            font-family: 'Inter', sans-serif;
-            overflow-x: hidden;
+            background-color: #050507; /* Darker base for better glow contrast */
+            color: #e4e4e7; /* Zinc 200 */
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(99, 102, 241, 0.08), transparent 25%), 
+                radial-gradient(circle at 85% 30%, rgba(168, 85, 247, 0.08), transparent 25%);
         }
-
-        .font-mono {
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        /* Glassmorphism Card */
-        .glass-card {
-            background: rgba(26, 29, 45, 0.6);
+        
+        .card {
+            background-color: rgba(24, 24, 27, 0.6); /* More transparent for glass effect */
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 1rem;
-            transition: transform 0.2s ease, border-color 0.2s ease;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 0.75rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
         }
 
-        .glass-card:hover {
-            border-color: rgba(129, 140, 248, 0.2);
+        .card:hover {
+            border-color: rgba(99, 102, 241, 0.4);
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.15); /* The Glow */
+            transform: translateY(-2px);
         }
 
-        /* Gradient Text */
-        .text-gradient {
-            background-clip: text;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-image: linear-gradient(to right, #818cf8, #c084fc);
+        .text-glow {
+            text-shadow: 0 0 15px rgba(99, 102, 241, 0.6);
+        }
+        
+        .text-glow-pink {
+            text-shadow: 0 0 15px rgba(236, 72, 153, 0.6);
+        }
+
+        .text-glow-yellow {
+            text-shadow: 0 0 15px rgba(234, 179, 8, 0.6);
         }
 
         /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: var(--bg-dark);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #334155;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #475569;
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #09090b; }
+        ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+
+        .loader {
+            border: 2px solid #27272a;
+            border-top: 2px solid #6366f1;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
         }
 
-        .animate-fade-in {
-            animation: fadeIn 0.6s ease-out forwards;
-            opacity: 0;
-            transform: translateY(10px);
-        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        @keyframes fadeIn {
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .shimmer {
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
-            background-size: 200% 100%;
-            animation: shimmer 2s infinite linear;
-        }
-
-        @keyframes shimmer {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
-        }
+        /* AI Markdown Styles */
+        .prose p { margin-bottom: 0.5rem; font-size: 0.95rem; color: #d4d4d8; line-height: 1.6; }
+        .prose strong { color: #fff; font-weight: 600; }
+        .prose ul { list-style-type: disc; padding-left: 1.25rem; margin-bottom: 0.5rem; }
+        .prose li { margin-bottom: 0.25rem; }
         
-        .rank-badge-glow {
-            box-shadow: 0 0 15px rgba(129, 140, 248, 0.3);
+        /* Toggle Switch */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #6366f1;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #6366f1;
         }
     </style>
 </head>
-<body class="min-h-screen selection:bg-indigo-500/30">
+<body class="min-h-screen flex flex-col selection:bg-indigo-500/30">
 
     <!-- Navbar -->
-    <nav class="sticky top-0 z-50 glass-card m-4 px-6 py-4 flex justify-between items-center shadow-lg shadow-black/20">
+    <nav class="sticky top-0 z-50 border-b border-zinc-800 bg-black/50 backdrop-blur-xl px-6 py-4 flex justify-between items-center">
         <div class="flex items-center gap-3">
-            <div class="p-2 bg-indigo-500/10 rounded-lg border border-indigo-500/20">
-                <i data-lucide="zap" class="text-indigo-400 w-6 h-6"></i>
+            <div class="w-8 h-8 bg-indigo-600/20 border border-indigo-500/30 rounded-lg flex items-center justify-center shadow-[0_0_15px_rgba(99,102,241,0.3)]">
+                <i data-lucide="zap" class="text-indigo-400 w-5 h-5"></i>
             </div>
-            <div>
-                <h1 class="text-xl font-bold tracking-tight text-white">sval<span class="text-indigo-400">.tech</span></h1>
-                <!-- <p class="text-xs text-slate-400 font-mono">JEE 2026 PREP DASHBOARD</p> -->
-            </div>
+            <h1 class="text-lg font-bold tracking-tight text-white drop-shadow-md">sval<span class="text-indigo-400">.tech</span></h1>
         </div>
-        <div class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-400">
-            <a href="#" class="text-white hover:text-indigo-400 transition-colors flex items-center gap-2"><i data-lucide="layout-grid" class="w-4 h-4"></i> Overview</a>
-            <a href="#achievements" class="hover:text-indigo-400 transition-colors flex items-center gap-2"><i data-lucide="trophy" class="w-4 h-4"></i> Achievements</a>
-            <a href="#syllabus" class="hover:text-indigo-400 transition-colors flex items-center gap-2"><i data-lucide="book-open" class="w-4 h-4"></i> Syllabus</a>
-        </div>
+
         <div class="flex items-center gap-4">
-            <!-- Rank Badge in Navbar -->
-            <div class="hidden lg:flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800 border border-slate-700">
-                <i data-lucide="crown" class="w-3 h-3 text-yellow-500"></i>
-                <span class="text-xs font-bold text-slate-200" id="nav-rank-display">Unranked</span>
-            </div>
+            <button onclick="toggleSettings()" class="text-zinc-400 hover:text-white transition-colors hover:rotate-90 duration-500" title="Settings / API Key">
+                <i data-lucide="settings" class="w-5 h-5"></i>
+            </button>
             
-            <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/50 border border-slate-700/50">
-                <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
-                <span class="text-xs font-mono text-emerald-400">ONLINE</span>
+            <!-- Rank Display -->
+            <div class="hidden md:flex flex-col items-end">
+                <div class="flex items-center gap-1.5">
+                    <i data-lucide="crown" class="w-3 h-3 text-yellow-500"></i>
+                    <span class="text-xs font-bold text-white tracking-wide" id="user-rank">Scholar</span>
+                </div>
+                <span class="text-[10px] text-indigo-400 font-mono" id="level-display">Level 1</span>
             </div>
-            <img src="https://api.dicebear.com/7.x/notionists/svg?seed=Felix" alt="Avatar" class="w-9 h-9 rounded-full bg-slate-800 border border-slate-700 hover:ring-2 hover:ring-indigo-500/50 transition-all cursor-pointer">
         </div>
     </nav>
 
-    <!-- Main Grid -->
-    <main class="p-4 pt-0 grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-[1600px] mx-auto pb-10">
+    <!-- Main Content -->
+    <main class="flex-1 p-4 md:p-6 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-        <!-- Left Column -->
+        <!-- Left Column (Main Stats) -->
         <div class="lg:col-span-8 space-y-6">
             
-            <!-- Welcome Banner & Quick Stats -->
-            <div class="space-y-6 animate-fade-in" style="animation-delay: 0.1s;">
-                <div class="glass-card p-8 relative overflow-hidden group">
-                    <div class="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-indigo-500/20 transition-all duration-700"></div>
-                    <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-                        <div>
-                            <div class="flex items-center gap-2 mb-2">
-                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 uppercase tracking-wider" id="hero-rank-badge">Rookie</span>
-                                <span class="text-slate-500 text-xs font-mono">LEVEL <span id="hero-level">1</span></span>
-                            </div>
-                            <h2 class="text-3xl font-bold text-white mb-2">Welcome back, Scholar.</h2>
-                            <p class="text-slate-400 max-w-lg mb-4">Consistency is key. You are currently in the top <span class="text-emerald-400 font-bold">15%</span> of your cohort based on study hours.</p>
-                            
-                            <!-- Share Button -->
-                            <button onclick="shareStats()" class="group flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all active:scale-95 shadow-lg shadow-indigo-500/20">
-                                <i data-lucide="share-2" class="w-4 h-4 group-hover:rotate-12 transition-transform"></i>
-                                Share Progress
-                            </button>
-                        </div>
-                        <div class="flex gap-4">
-                            <div class="text-right">
-                                <p class="text-xs text-slate-500 uppercase tracking-wider font-bold">Current Streak</p>
-                                <div class="flex items-center justify-end gap-2 text-3xl font-bold text-white">
-                                    <i data-lucide="flame" class="text-orange-500 w-8 h-8 drop-shadow-lg"></i>
-                                    <span id="streak-count">0</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 3 Summary Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <!-- Physics -->
-                    <div class="glass-card p-4 flex items-center gap-4 border-l-4 border-l-blue-500">
-                        <div class="p-3 bg-blue-500/10 rounded-lg">
-                            <i data-lucide="atom" class="text-blue-400 w-6 h-6"></i>
-                        </div>
-                        <div>
-                            <p class="text-xs text-slate-500 uppercase font-bold">Physics Hours</p>
-                            <h3 class="text-2xl font-bold text-white font-mono" id="stat-phy-hours">0h</h3>
-                        </div>
-                    </div>
-                    <!-- Chemistry -->
-                    <div class="glass-card p-4 flex items-center gap-4 border-l-4 border-l-pink-500">
-                        <div class="p-3 bg-pink-500/10 rounded-lg">
-                            <i data-lucide="flask-conical" class="text-pink-400 w-6 h-6"></i>
-                        </div>
-                        <div>
-                            <p class="text-xs text-slate-500 uppercase font-bold">Chem Hours</p>
-                            <h3 class="text-2xl font-bold text-white font-mono" id="stat-chem-hours">0h</h3>
-                        </div>
-                    </div>
-                    <!-- Maths -->
-                    <div class="glass-card p-4 flex items-center gap-4 border-l-4 border-l-yellow-500">
-                        <div class="p-3 bg-yellow-500/10 rounded-lg">
-                            <i data-lucide="calculator" class="text-yellow-400 w-6 h-6"></i>
-                        </div>
-                        <div>
-                            <p class="text-xs text-slate-500 uppercase font-bold">Maths Hours</p>
-                            <h3 class="text-2xl font-bold text-white font-mono" id="stat-math-hours">0h</h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Focus Recommendations (Using Syllabus Data) -->
-            <div class="glass-card p-6 animate-fade-in" style="animation-delay: 0.2s;">
-                <h3 class="text-lg font-semibold text-white flex items-center gap-2 mb-4">
-                    <i data-lucide="crosshair" class="text-red-400 w-5 h-5"></i>
-                    Immediate Focus Areas
-                </h3>
-                <p class="text-sm text-slate-400 mb-4">Based on your syllabus tracker, these topics are marked <span class="text-indigo-400 font-bold">"In-Progress"</span>. Finish them to level up!</p>
+            <!-- AI Briefing Section -->
+            <div class="card p-6 relative overflow-hidden group border-indigo-500/20 shadow-[0_0_20px_rgba(79,70,229,0.1)]">
+                <div class="absolute top-0 right-0 w-64 h-64 bg-indigo-600/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none group-hover:bg-indigo-600/20 transition-all duration-700"></div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="recommendation-list">
-                    <!-- Injected via JS -->
-                </div>
-            </div>
-
-            <!-- QFT Analytics Chart -->
-            <div class="glass-card p-6 animate-fade-in" style="animation-delay: 0.25s;" id="analytics">
-                <div class="flex justify-between items-center mb-6">
-                    <div>
-                        <h3 class="text-lg font-semibold text-white flex items-center gap-2">
-                            <i data-lucide="activity" class="text-indigo-400 w-5 h-5"></i>
-                            Mock Test Performance
-                        </h3>
+                <div class="relative z-10">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-2 text-indigo-400">
+                            <i data-lucide="sparkles" class="w-4 h-4 animate-pulse"></i>
+                            <span class="text-xs font-bold uppercase tracking-wider text-indigo-300 drop-shadow-sm">Daily Briefing</span>
+                        </div>
+                        <button onclick="forceRefreshAI()" class="text-zinc-500 hover:text-indigo-400 transition-colors" title="Regenerate">
+                            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                        </button>
                     </div>
-                    <select id="chart-filter" class="bg-slate-800 border border-slate-700 text-slate-300 text-sm rounded-lg px-3 py-1 focus:outline-none focus:border-indigo-500">
-                        <option value="total">Total Score</option>
-                        <option value="physics">Physics</option>
-                        <option value="chemistry">Chemistry</option>
-                        <option value="maths">Mathematics</option>
-                    </select>
-                </div>
-                <div class="relative h-64 w-full">
-                    <canvas id="qftChart"></canvas>
+
+                    <div id="ai-content" class="min-h-[80px]">
+                        <!-- Dynamic Content Here -->
+                        <div class="flex flex-col gap-2 animate-pulse">
+                            <div class="h-4 bg-zinc-800/50 rounded w-3/4"></div>
+                            <div class="h-4 bg-zinc-800/50 rounded w-1/2"></div>
+                        </div>
+                    </div>
+                    
+                    <div id="api-key-warning" class="hidden mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-md backdrop-blur-sm">
+                        <p class="text-xs text-red-400 flex items-center gap-2">
+                            <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                            API Key missing. Click the settings gear to add your Gemini API Key.
+                        </p>
+                    </div>
                 </div>
             </div>
 
-            <!-- Study Consistency -->
-            <div class="glass-card p-6 animate-fade-in" style="animation-delay: 0.3s;" id="logs">
-                 <h3 class="text-lg font-semibold text-white flex items-center gap-2 mb-4">
-                    <i data-lucide="bar-chart-2" class="text-emerald-400 w-5 h-5"></i>
-                    Study Consistency (Last 30 Days)
-                </h3>
-                <div class="h-64 relative">
-                    <canvas id="dailyTrendChart"></canvas>
+            <!-- Subject Breakdown -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="card p-4 hover:shadow-[0_0_15px_rgba(59,130,246,0.2)] hover:border-blue-500/30">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="p-2 bg-blue-500/10 rounded-md text-blue-400 border border-blue-500/10"><i data-lucide="atom" class="w-4 h-4"></i></div>
+                        <span class="text-xs font-mono text-zinc-500">PHYSICS</span>
+                    </div>
+                    <div class="text-2xl font-bold text-white font-mono text-glow" style="text-shadow: 0 0 15px rgba(59, 130, 246, 0.6);" id="stat-phy">0h</div>
+                    <div class="text-xs text-zinc-500 mt-1">Total focus time</div>
+                </div>
+                <div class="card p-4 hover:shadow-[0_0_15px_rgba(236,72,153,0.2)] hover:border-pink-500/30">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="p-2 bg-pink-500/10 rounded-md text-pink-400 border border-pink-500/10"><i data-lucide="flask-conical" class="w-4 h-4"></i></div>
+                        <span class="text-xs font-mono text-zinc-500">CHEMISTRY</span>
+                    </div>
+                    <div class="text-2xl font-bold text-white font-mono text-glow-pink" id="stat-chem">0h</div>
+                    <div class="text-xs text-zinc-500 mt-1">Total focus time</div>
+                </div>
+                <div class="card p-4 hover:shadow-[0_0_15px_rgba(234,179,8,0.2)] hover:border-yellow-500/30">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="p-2 bg-yellow-500/10 rounded-md text-yellow-400 border border-yellow-500/10"><i data-lucide="calculator" class="w-4 h-4"></i></div>
+                        <span class="text-xs font-mono text-zinc-500">MATHS</span>
+                    </div>
+                    <div class="text-2xl font-bold text-white font-mono text-glow-yellow" id="stat-math">0h</div>
+                    <div class="text-xs text-zinc-500 mt-1">Total focus time</div>
                 </div>
             </div>
 
+            <!-- Charts Section -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Trend -->
+                <div class="card p-5">
+                    <h3 class="text-sm font-medium text-zinc-300 mb-4 flex items-center gap-2">
+                        <i data-lucide="bar-chart-2" class="w-4 h-4 text-zinc-500"></i> Consistency
+                    </h3>
+                    <div class="h-48 relative w-full">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Test Scores -->
+                <div class="card p-5">
+                    <h3 class="text-sm font-medium text-zinc-300 mb-4 flex items-center gap-2">
+                        <i data-lucide="line-chart" class="w-4 h-4 text-zinc-500"></i> Performance Trace
+                    </h3>
+                    <div class="h-48 relative w-full">
+                        <canvas id="scoreChart"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Right Column (Sidebar) -->
-        <div class="lg:col-span-4 space-y-6 animate-fade-in" style="animation-delay: 0.4s;">
-
-            <!-- Trophy Case (New) -->
-            <div class="glass-card p-6" id="achievements">
+        <div class="lg:col-span-4 space-y-6">
+            
+            <!-- Achievements -->
+            <div class="card p-5 relative overflow-hidden">
                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-semibold text-white flex items-center gap-2">
-                        <i data-lucide="award" class="text-yellow-400 w-5 h-5"></i>
-                        Badges
+                    <h3 class="text-sm font-medium text-white flex items-center gap-2">
+                        <i data-lucide="trophy" class="text-yellow-500 w-4 h-4"></i> Achievements
                     </h3>
-                    <span class="text-xs text-slate-500 font-mono" id="badge-count">0/6</span>
+                    <span class="text-xs text-zinc-500 font-mono" id="badge-count">0/6</span>
                 </div>
                 <div class="grid grid-cols-3 gap-3" id="badge-grid">
-                    <!-- Injected via JS -->
+                    <!-- Badges injected via JS -->
                 </div>
             </div>
 
-            <!-- Upcoming Test -->
-            <div class="glass-card p-6 bg-gradient-to-br from-indigo-900/40 to-slate-900/40 border-indigo-500/30">
-                <div class="flex items-start justify-between mb-4">
-                    <div>
-                        <p class="text-xs font-bold text-indigo-300 uppercase tracking-widest mb-1">Upcoming Exam</p>
-                        <h3 class="text-xl font-bold text-white" id="next-test-name">Loading...</h3>
+            <!-- Immediate Actions -->
+            <div class="card p-5">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-sm font-medium text-white">Priority Queue</h3>
+                    <span class="text-xs bg-zinc-800 text-zinc-400 px-2 py-1 rounded border border-zinc-700" id="task-count">0</span>
+                </div>
+                <div class="space-y-3 max-h-[300px] overflow-y-auto pr-2" id="task-list">
+                    <!-- Tasks injected here -->
+                </div>
+            </div>
+
+            <!-- Upcoming Event -->
+            <div class="card p-5 relative overflow-hidden">
+                 <div class="absolute inset-0 bg-gradient-to-br from-indigo-900/20 to-zinc-900/50"></div>
+                <div class="relative z-10">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest drop-shadow">Next Target</span>
+                        <i data-lucide="calendar" class="w-4 h-4 text-zinc-500"></i>
                     </div>
-                    <div class="p-2 bg-indigo-500/20 rounded-lg">
-                        <i data-lucide="calendar" class="text-indigo-400 w-5 h-5"></i>
-                    </div>
-                </div>
-                <div class="flex items-center gap-3 mb-2">
-                    <i data-lucide="clock" class="w-4 h-4 text-slate-400"></i>
-                    <span class="text-sm text-slate-300 font-mono" id="next-test-date">--</span>
+                    <h3 class="text-lg font-bold text-white leading-tight mb-1 drop-shadow-md" id="test-name">Loading...</h3>
+                    <p class="text-sm text-zinc-400 font-mono" id="test-date">--</p>
                 </div>
             </div>
 
-            <!-- Syllabus Status -->
-            <div class="glass-card p-6" id="syllabus">
-                <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                    <i data-lucide="pie-chart" class="text-purple-400 w-5 h-5"></i>
-                    Syllabus Mastery
-                </h3>
-                <div class="space-y-5" id="syllabus-bars">
-                    <!-- Populated by JS -->
+            <!-- Syllabus Progress -->
+            <div class="card p-5">
+                <h3 class="text-sm font-medium text-white mb-4">Coverage</h3>
+                <div class="space-y-4" id="syllabus-bars">
+                    <!-- JS Injected -->
                 </div>
             </div>
-            
-            <!-- Tasks -->
-            <div class="glass-card flex flex-col max-h-[400px]">
-                <div class="p-6 border-b border-slate-700/50 flex justify-between items-center">
-                    <h3 class="font-semibold text-white flex items-center gap-2">
-                        <i data-lucide="check-square" class="text-pink-400 w-5 h-5"></i>
-                        Priority Tasks
-                    </h3>
-                    <span class="text-xs bg-pink-500/10 text-pink-400 px-2 py-1 rounded-md font-mono" id="task-count">0</span>
-                </div>
-                <div class="p-4 overflow-y-auto flex-1 space-y-3 custom-scrollbar" id="task-list">
-                    <!-- Tasks injected via JS -->
-                </div>
-            </div>
-
         </div>
-
     </main>
 
-    <!-- Success Toast (Hidden by default) -->
-    <div id="toast" class="fixed bottom-6 right-6 bg-slate-800 border border-slate-700 text-white px-4 py-3 rounded-lg shadow-xl transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex items-center gap-3">
-        <div class="bg-emerald-500/20 p-1.5 rounded-full text-emerald-400">
-            <i data-lucide="check" class="w-4 h-4"></i>
-        </div>
-        <div>
-            <h4 class="font-bold text-sm">Copied to Clipboard!</h4>
-            <p class="text-xs text-slate-400">Share your stats with your friends.</p>
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden flex items-center justify-center">
+        <div class="card p-6 w-full max-w-md shadow-[0_0_50px_rgba(0,0,0,0.8)] border-zinc-700 scale-95 opacity-0 transition-all duration-200" id="settings-content">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-lg font-bold text-white">Settings</h2>
+                <button onclick="toggleSettings()" class="text-zinc-500 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            
+            <div class="space-y-6">
+                <!-- API Key Section -->
+                <div>
+                    <label class="block text-xs font-medium text-zinc-400 mb-1.5">Gemini API Key</label>
+                    <input type="password" id="api-key-input" placeholder="AIzaSy..." class="w-full bg-zinc-900 border border-zinc-700 text-white px-3 py-2 rounded-md text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-inner">
+                    <p class="text-[10px] text-zinc-500 mt-2">
+                        Key stored locally. <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-indigo-400 hover:underline">Get Key</a>
+                    </p>
+                </div>
+
+                <!-- Privacy Toggle Section -->
+                <div class="flex items-center justify-between p-3 rounded-lg bg-zinc-800/50 border border-zinc-700/50">
+                    <div class="flex flex-col">
+                        <span class="text-sm font-medium text-zinc-200">Share Study Hours</span>
+                        <span class="text-[10px] text-zinc-500">Allow AI to analyze consistency (Hours)</span>
+                    </div>
+                    <div class="relative inline-block w-10 h-5 transition duration-200 ease-in-out align-middle select-none">
+                        <input type="checkbox" name="toggle" id="hours-toggle" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all duration-300 border-zinc-600"/>
+                        <label for="hours-toggle" class="toggle-label block overflow-hidden h-5 rounded-full bg-zinc-700 cursor-pointer"></label>
+                    </div>
+                </div>
+                
+                <button onclick="saveSettings()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2 rounded-md text-sm font-medium transition-colors shadow-lg shadow-indigo-500/20">
+                    Save Configuration
+                </button>
+            </div>
         </div>
     </div>
 
     <script>
-        // --- 1. DATA PARSING ---
-        // Fetching directly from LocalStorage as requested
-        const rawData = {
-            jeeCustomCards_v3: localStorage.getItem('jeeCustomCards_v3'),
-            jeeStudyLogs_v1: localStorage.getItem('jeeStudyLogs_v1'),
-            jee_v3_status: localStorage.getItem('jee_v3_status'),
-            jeePartTests_v2: localStorage.getItem('jeePartTests_v2'),
-            jee_os_v4: localStorage.getItem('jee_os_v4')
-        };
-
-        const parseJSON = (str) => {
-            if (!str) return null; // Handle missing keys gracefully
-            try { return JSON.parse(str); } 
-            catch (e) { console.error("Parse Error", e); return null; }
-        };
-
-        // Parse with fallbacks to prevent crashes if data is missing
-        const customCards = parseJSON(rawData.jeeCustomCards_v3) || [];
-        const studyLogs = parseJSON(rawData.jeeStudyLogs_v1) || {};
-        const syllabusStatus = parseJSON(rawData.jee_v3_status) || {};
-        const tests = parseJSON(rawData.jeePartTests_v2) || {};
-        const osData = parseJSON(rawData.jee_os_v4) || { stats: { streak: 0 } };
-
-        // --- 2. CALCULATE STATS ---
-        let totalPhySec = 0, totalChemSec = 0, totalMatSec = 0;
-        let totalHours = 0;
-        const dailyTrendData = {};
-
-        Object.entries(studyLogs).forEach(([date, dayLog]) => {
-            let dayTotal = 0;
-            if (dayLog.Physics) { totalPhySec += dayLog.Physics; dayTotal += dayLog.Physics; }
-            if (dayLog.Chemistry) { totalChemSec += dayLog.Chemistry; dayTotal += dayLog.Chemistry; }
-            if (dayLog.Maths) { totalMatSec += dayLog.Maths; dayTotal += dayLog.Maths; }
-            if (dayLog['Computer Science']) dayTotal += dayLog['Computer Science'];
-            dailyTrendData[date] = dayTotal;
-        });
-        totalHours = (totalPhySec + totalChemSec + totalMatSec) / 3600;
-
-        // --- 3. GAMIFICATION LOGIC ---
-
-        // A. Ranking System
-        const getRank = (hours) => {
-            if (hours < 10) return { name: "Novice", color: "text-slate-400", level: 1 };
-            if (hours < 50) return { name: "Apprentice", color: "text-emerald-400", level: 5 };
-            if (hours < 100) return { name: "Adept", color: "text-blue-400", level: 10 };
-            if (hours < 200) return { name: "Expert", color: "text-purple-400", level: 25 };
-            if (hours < 500) return { name: "Master", color: "text-pink-400", level: 50 };
-            return { name: "Grandmaster", color: "text-yellow-400", level: 99 };
-        };
-
-        const rank = getRank(totalHours);
-        document.getElementById('hero-rank-badge').innerText = rank.name;
-        document.getElementById('hero-rank-badge').className = `px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 ${rank.color} border border-slate-700 uppercase tracking-wider`;
-        document.getElementById('nav-rank-display').innerText = rank.name;
-        document.getElementById('nav-rank-display').className = `text-xs font-bold ${rank.color}`;
-        document.getElementById('hero-level').innerText = rank.level;
-
-        // B. Badges System
-        const currentStreak = osData?.stats?.streak || 0;
+        // --- CONFIG ---
+        const apiKey = ""; // Leave empty. Logic handles LocalStorage.
         
-        const badges = [
-            { id: 'streak', icon: 'flame', color: 'text-orange-500', bg: 'bg-orange-500/10', name: 'On Fire', desc: '7+ Day Streak', earned: currentStreak >= 7 },
-            { id: 'hours', icon: 'clock', color: 'text-blue-500', bg: 'bg-blue-500/10', name: 'Dedicated', desc: '100+ Hours', earned: totalHours >= 100 },
-            { id: 'master', icon: 'star', color: 'text-yellow-500', bg: 'bg-yellow-500/10', name: 'Scholar', desc: 'Mastered 20 Topics', earned: false }, // Calculated below
-            { id: 'early', icon: 'sunrise', color: 'text-pink-500', bg: 'bg-pink-500/10', name: 'Early Bird', desc: 'Study before 6AM', earned: true }, // Dummy for UI
-            { id: 'phy', icon: 'atom', color: 'text-indigo-500', bg: 'bg-indigo-500/10', name: 'Physicist', desc: 'Physics > 50h', earned: (totalPhySec/3600) > 50 },
-            { id: 'chem', icon: 'flask-conical', color: 'text-emerald-500', bg: 'bg-emerald-500/10', name: 'Alchemist', desc: 'Chem > 50h', earned: (totalChemSec/3600) > 50 },
-        ];
-
-        // --- 4. SYLLABUS & RECOMMENDATIONS ---
-        const stats = {
-            PHY: { total: 0, mastered: 0, completed: 0 },
-            CHE: { total: 0, mastered: 0, completed: 0 },
-            MAT: { total: 0, mastered: 0, completed: 0 }
+        // --- 1. DATA HANDLING ---
+        // Simulating data access from the previous context's request
+        const rawData = {
+            customCards: JSON.parse(localStorage.getItem('jeeCustomCards_v3') || '[]'),
+            studyLogs: JSON.parse(localStorage.getItem('jeeStudyLogs_v1') || '{}'),
+            syllabus: JSON.parse(localStorage.getItem('jee_v3_status') || '{}'),
+            tests: JSON.parse(localStorage.getItem('jeePartTests_v2') || '{}'),
+            osData: JSON.parse(localStorage.getItem('jee_os_v4') || '{}')
         };
-        const inProgressTopics = [];
 
-        Object.entries(syllabusStatus).forEach(([key, status]) => {
-            const subject = key.substring(0, 3);
-            if (stats[subject]) {
-                stats[subject].total++;
-                if (status === 'mastered') stats[subject].mastered++;
-                if (status === 'completed') stats[subject].completed++;
-                if (status === 'in-progress') inProgressTopics.push({ code: key, subject });
+        // Aggregation Variables
+        let totalStats = { P: 0, C: 0, M: 0, Total: 0 };
+        const trendData = [];
+        
+        // Process Study Logs
+        Object.entries(rawData.studyLogs).forEach(([date, log]) => {
+            const p = log.Physics || 0;
+            const c = log.Chemistry || 0;
+            const m = log.Maths || 0;
+            
+            totalStats.P += p;
+            totalStats.C += c;
+            totalStats.M += m;
+            
+            trendData.push({
+                date: new Date(date),
+                total: (p + c + m) / 3600
+            });
+        });
+        
+        // Sort trend by date
+        trendData.sort((a, b) => a.date - b.date);
+        
+        // Convert totals to hours
+        const toHrs = (s) => (s / 3600).toFixed(1);
+        totalStats.Total = (totalStats.P + totalStats.C + totalStats.M) / 3600;
+
+        // --- 2. UI POPULATION ---
+        
+        // Stats
+        document.getElementById('stat-phy').innerText = `${toHrs(totalStats.P)}h`;
+        document.getElementById('stat-chem').innerText = `${toHrs(totalStats.C)}h`;
+        document.getElementById('stat-math').innerText = `${toHrs(totalStats.M)}h`;
+
+        // Rank Logic
+        const getRank = (h) => {
+            if (h < 10) return { name: "Novice", level: 1 };
+            if (h < 50) return { name: "Apprentice", level: 5 };
+            if (h < 100) return { name: "Adept", level: 10 };
+            if (h < 200) return { name: "Expert", level: 25 };
+            if (h < 500) return { name: "Master", level: 50 };
+            return { name: "Grandmaster", level: 99 };
+        };
+        const rankInfo = getRank(totalStats.Total);
+        document.getElementById('user-rank').innerText = rankInfo.name;
+        document.getElementById('level-display').innerText = `Level ${rankInfo.level}`;
+
+        // Upcoming Test
+        const upcomingTests = Object.entries(rawData.tests)
+            .map(([d, n]) => ({ date: new Date(d), name: n }))
+            .sort((a, b) => a.date - b.date)
+            .filter(t => t.date >= new Date().setHours(0,0,0,0));
+            
+        if(upcomingTests.length > 0) {
+            document.getElementById('test-name').innerText = upcomingTests[0].name;
+            document.getElementById('test-date').innerText = upcomingTests[0].date.toLocaleDateString('en-US', {month: 'long', day: 'numeric', weekday: 'short'});
+        } else {
+            document.getElementById('test-name').innerText = "No Exams Scheduled";
+            document.getElementById('test-date').innerText = "Clear Horizon";
+        }
+
+        // Tasks
+        const todoCard = rawData.customCards.find(c => c.type === 'todo');
+        const taskContainer = document.getElementById('task-list');
+        let pending = 0;
+        
+        if (todoCard && todoCard.content) {
+            todoCard.content.forEach(task => {
+                if(!task.completed) pending++;
+                const el = document.createElement('div');
+                el.className = `flex items-center gap-3 p-3 rounded bg-zinc-800/50 border border-zinc-700/50 transition-colors hover:bg-zinc-800 ${task.completed ? 'opacity-40' : ''}`;
+                el.innerHTML = `
+                    <div class="w-4 h-4 rounded border ${task.completed ? 'bg-indigo-500 border-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]' : 'border-zinc-600'} flex items-center justify-center">
+                        ${task.completed ? '<i data-lucide="check" class="w-3 h-3 text-white"></i>' : ''}
+                    </div>
+                    <span class="text-sm text-zinc-300 ${task.completed ? 'line-through' : ''}">${task.text}</span>
+                `;
+                taskContainer.appendChild(el);
+            });
+        }
+        document.getElementById('task-count').innerText = pending;
+
+        // Syllabus & Badges Logic
+        const subjects = { PHY: {m:0, t:0}, CHE: {m:0, t:0}, MAT: {m:0, t:0} };
+        Object.entries(rawData.syllabus).forEach(([k, status]) => {
+            const sub = k.substring(0,3);
+            if(subjects[sub]) {
+                subjects[sub].t++;
+                if(status === 'mastered' || status === 'completed') subjects[sub].m++;
             }
         });
 
-        // Update Master Badge status
-        const totalMastered = stats.PHY.mastered + stats.CHE.mastered + stats.MAT.mastered;
-        badges.find(b => b.id === 'master').earned = totalMastered >= 20;
+        const totalMastered = subjects.PHY.m + subjects.CHE.m + subjects.MAT.m;
+        const currentStreak = rawData.osData?.stats?.streak || 0;
+
+        // Badges Array
+        const badges = [
+            { id: 'streak', icon: 'flame', color: 'text-orange-500', bg: 'bg-orange-500/10', name: 'On Fire', desc: '7+ Day Streak', earned: currentStreak >= 7 },
+            { id: 'hours', icon: 'clock', color: 'text-blue-500', bg: 'bg-blue-500/10', name: 'Dedicated', desc: '100+ Hours', earned: totalStats.Total >= 100 },
+            { id: 'master', icon: 'star', color: 'text-yellow-500', bg: 'bg-yellow-500/10', name: 'Scholar', desc: '20+ Topics', earned: totalMastered >= 20 },
+            { id: 'early', icon: 'sunrise', color: 'text-pink-500', bg: 'bg-pink-500/10', name: 'Early Bird', desc: 'Study < 6AM', earned: true },
+            { id: 'phy', icon: 'atom', color: 'text-indigo-500', bg: 'bg-indigo-500/10', name: 'Physicist', desc: 'Phy > 50h', earned: (totalStats.P/3600) > 50 },
+            { id: 'chem', icon: 'flask-conical', color: 'text-emerald-500', bg: 'bg-emerald-500/10', name: 'Alchemist', desc: 'Chem > 50h', earned: (totalStats.C/3600) > 50 },
+        ];
 
         // Render Badges
         const badgeGrid = document.getElementById('badge-grid');
         let earnedCount = 0;
-        badgeGrid.innerHTML = ''; // Clear existing
-        
         badges.forEach(badge => {
             if(badge.earned) earnedCount++;
             const div = document.createElement('div');
-            div.className = `flex flex-col items-center justify-center p-3 rounded-lg border ${badge.earned ? 'border-slate-700 bg-slate-800/50' : 'border-dashed border-slate-800 bg-slate-900/50 opacity-50'} text-center gap-2`;
+            const glowClass = badge.earned ? 'shadow-[0_0_10px_rgba(255,255,255,0.05)] border-zinc-700 bg-zinc-800/80' : 'border-dashed border-zinc-800 bg-zinc-900/30 opacity-40';
+            
+            div.className = `flex flex-col items-center justify-center p-2 rounded-lg border ${glowClass} text-center gap-1.5 transition-all hover:scale-105`;
             div.innerHTML = `
-                <div class="p-2 rounded-full ${badge.earned ? badge.bg : 'bg-slate-800'}">
-                    <i data-lucide="${badge.icon}" class="w-5 h-5 ${badge.earned ? badge.color : 'text-slate-600'}"></i>
+                <div class="p-1.5 rounded-full ${badge.earned ? badge.bg : 'bg-zinc-800'} ${badge.earned ? 'shadow-inner' : ''}">
+                    <i data-lucide="${badge.icon}" class="w-4 h-4 ${badge.earned ? badge.color : 'text-zinc-600'}"></i>
                 </div>
                 <div>
-                    <p class="text-[10px] font-bold text-slate-300 uppercase leading-tight">${badge.name}</p>
+                    <p class="text-[9px] font-bold text-zinc-300 uppercase leading-tight">${badge.name}</p>
                 </div>
             `;
             badgeGrid.appendChild(div);
         });
         document.getElementById('badge-count').innerText = `${earnedCount}/${badges.length}`;
 
-        // Render Recommendations
-        const recList = document.getElementById('recommendation-list');
-        recList.innerHTML = ''; // Clear existing
+        // Render Syllabus Bars
+        const sylContainer = document.getElementById('syllabus-bars');
+        const colors = { PHY: 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]', CHE: 'bg-pink-500 shadow-[0_0_8px_rgba(236,72,153,0.6)]', MAT: 'bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.6)]' };
         
-        // Take top 4 in-progress topics
-        const topRecs = inProgressTopics.slice(0, 4); 
-        if(topRecs.length === 0) {
-            recList.innerHTML = `<div class="col-span-2 text-sm text-slate-500 italic">No topics currently marked 'in-progress'. Start something new!</div>`;
-        } else {
-            topRecs.forEach(topic => {
-                const subColors = { PHY: 'text-blue-400 border-blue-500/30 bg-blue-500/10', CHE: 'text-pink-400 border-pink-500/30 bg-pink-500/10', MAT: 'text-yellow-400 border-yellow-500/30 bg-yellow-500/10' };
-                const div = document.createElement('div');
-                div.className = "flex items-center justify-between p-3 bg-slate-800/40 border border-slate-700/50 rounded-lg hover:bg-slate-800 transition-colors";
-                div.innerHTML = `
-                    <div class="flex items-center gap-3">
-                        <span class="px-2 py-1 rounded text-[10px] font-mono font-bold border ${subColors[topic.subject]}">${topic.code}</span>
-                        <span class="text-sm text-slate-300">Resume Study</span>
-                    </div>
-                    <i data-lucide="arrow-right" class="w-4 h-4 text-slate-500"></i>
-                `;
-                recList.appendChild(div);
-            });
-        }
-
-        // Render Syllabus Progress Bars
-        const syllabusContainer = document.getElementById('syllabus-bars');
-        const renderProgressBar = (label, colorClass, data) => {
-            const masteredPct = data.total ? (data.mastered / data.total) * 100 : 0;
-            const completedPct = data.total ? (data.completed / data.total) * 100 : 0;
-            return `
-                <div>
-                    <div class="flex justify-between text-xs mb-1.5">
-                        <span class="font-bold text-slate-300 tracking-wider">${label}</span>
-                        <span class="text-slate-400 font-mono">${Math.round(masteredPct + completedPct)}%</span>
-                    </div>
-                    <div class="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden flex">
-                        <div class="h-full ${colorClass} opacity-100" style="width: ${masteredPct}%"></div>
-                        <div class="h-full ${colorClass} opacity-40" style="width: ${completedPct}%"></div>
-                    </div>
-                    <div class="flex justify-between mt-1 text-[10px] text-slate-500">
-                        <span>${data.mastered} Mastered</span>
-                        <span>${data.total} Topics</span>
-                    </div>
+        Object.entries(subjects).forEach(([sub, data]) => {
+            const pct = data.t ? (data.m / data.t) * 100 : 0;
+            const el = document.createElement('div');
+            el.innerHTML = `
+                <div class="flex justify-between text-xs mb-1">
+                    <span class="font-bold text-zinc-400 tracking-wider">${sub}</span>
+                    <span class="text-zinc-500 font-mono">${Math.round(pct)}%</span>
+                </div>
+                <div class="w-full bg-zinc-800/50 rounded-full h-1.5 overflow-hidden">
+                    <div class="${colors[sub]} h-full rounded-full transition-all duration-1000 ease-out" style="width: ${pct}%"></div>
                 </div>
             `;
-        };
-        syllabusContainer.innerHTML = 
-            renderProgressBar('PHYSICS', 'bg-blue-500', stats.PHY) +
-            renderProgressBar('CHEMISTRY', 'bg-pink-500', stats.CHE) +
-            renderProgressBar('MATHEMATICS', 'bg-yellow-500', stats.MAT);
-
-        // --- 5. SOCIAL SHARING ---
-        window.shareStats = () => {
-            const text = `🚀 *My JEE 2026 Progress on ZenithOS* 🚀\n\n` +
-                         `🔥 Streak: ${currentStreak} Days\n` +
-                         `🏆 Rank: ${rank.name} (Lvl ${rank.level})\n` +
-                         `⏱️ Total Study: ${totalHours.toFixed(1)} Hours\n` +
-                         `📚 Topics Mastered: ${totalMastered}\n\n` +
-                         `#JEE2026 #StudyGrind #ZenithDashboard`;
-            
-            navigator.clipboard.writeText(text).then(() => {
-                const toast = document.getElementById('toast');
-                toast.classList.remove('translate-y-20', 'opacity-0');
-                setTimeout(() => {
-                    toast.classList.add('translate-y-20', 'opacity-0');
-                }, 3000);
-            });
-        };
-
-        // --- 6. STANDARD UI POPULATION ---
-        const toHrs = (sec) => (sec / 3600).toFixed(1);
-        document.getElementById('stat-phy-hours').innerText = `${toHrs(totalPhySec)}h`;
-        document.getElementById('stat-chem-hours').innerText = `${toHrs(totalChemSec)}h`;
-        document.getElementById('stat-math-hours').innerText = `${toHrs(totalMatSec)}h`;
-        document.getElementById('streak-count').innerText = currentStreak;
-
-        // Tasks
-        const todoCard = customCards.find(c => c.type === 'todo');
-        const taskListEl = document.getElementById('task-list');
-        taskListEl.innerHTML = ''; // Clear existing
-        let pendingCount = 0;
-        if (todoCard && todoCard.content) {
-            todoCard.content.forEach(task => {
-                if (!task.completed) pendingCount++;
-                const div = document.createElement('div');
-                div.className = `p-3 rounded-lg border border-slate-700/50 flex items-start gap-3 group transition-colors ${task.completed ? 'bg-slate-800/30 opacity-50' : 'bg-slate-800/80 hover:bg-slate-800'}`;
-                div.innerHTML = `
-                    <div class="mt-0.5 w-5 h-5 rounded border ${task.completed ? 'bg-emerald-500/20 border-emerald-500' : 'border-slate-500 group-hover:border-indigo-400'} flex items-center justify-center transition-colors">
-                        ${task.completed ? '<i data-lucide="check" class="w-3 h-3 text-emerald-500"></i>' : ''}
-                    </div>
-                    <span class="text-sm ${task.completed ? 'text-slate-500 line-through' : 'text-slate-200'}">${task.text}</span>
-                `;
-                taskListEl.appendChild(div);
-            });
-            document.getElementById('task-count').innerText = pendingCount;
-        }
-
-        // Test Date
-        const upcomingTests = Object.entries(tests).map(([date, name]) => ({
-            date: new Date(date), name
-        })).sort((a, b) => a.date - b.date).filter(t => t.date >= new Date().setHours(0,0,0,0));
-        if (upcomingTests.length > 0) {
-            document.getElementById('next-test-name').innerText = upcomingTests[0].name;
-            document.getElementById('next-test-date').innerText = new Date(upcomingTests[0].date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-        } else {
-             document.getElementById('next-test-name').innerText = "No Tests";
-             document.getElementById('next-test-date').innerText = "Relax";
-        }
-
-        // --- 7. CHARTS ---
-        Chart.defaults.color = '#94a3b8';
-        Chart.defaults.borderColor = '#334155';
-        Chart.defaults.font.family = "'Inter', sans-serif";
-
-        // QFT Chart
-        const qftDataRaw = customCards.find(c => c.type === 'line-graph')?.content || [];
-        const qftChart = new Chart(document.getElementById('qftChart').getContext('2d'), {
-            type: 'line',
-            data: {
-                labels: qftDataRaw.map(d => d.name),
-                datasets: [
-                    { label: 'Total', data: qftDataRaw.map(d => d.total), borderColor: '#818cf8', backgroundColor: 'rgba(129, 140, 248, 0.1)', borderWidth: 2, tension: 0.4, fill: true, pointBackgroundColor: '#1e1b4b', pointBorderColor: '#818cf8' },
-                    { label: 'Physics', data: qftDataRaw.map(d => d.subjects?.physics || 0), borderColor: '#3b82f6', hidden: true },
-                    { label: 'Chemistry', data: qftDataRaw.map(d => d.subjects?.chemistry || 0), borderColor: '#ec4899', hidden: true },
-                    { label: 'Maths', data: qftDataRaw.map(d => d.subjects?.maths || 0), borderColor: '#eab308', hidden: true }
-                ]
-            },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 300 }, x: { grid: { display: false } } } }
-        });
-        document.getElementById('chart-filter').addEventListener('change', (e) => {
-            const val = e.target.value;
-            qftChart.data.datasets.forEach(ds => ds.hidden = true);
-            if (val === 'total') qftChart.data.datasets[0].hidden = false;
-            else if (val === 'physics') qftChart.data.datasets[1].hidden = false;
-            else if (val === 'chemistry') qftChart.data.datasets[2].hidden = false;
-            else if (val === 'maths') qftChart.data.datasets[3].hidden = false;
-            qftChart.update();
+            sylContainer.appendChild(el);
         });
 
-        // Trend Chart
-        const sortedTrendDates = Object.keys(dailyTrendData).sort((a, b) => new Date(a) - new Date(b));
-        new Chart(document.getElementById('dailyTrendChart').getContext('2d'), {
+        // --- 3. CHARTS ---
+        Chart.defaults.color = '#71717a';
+        Chart.defaults.borderColor = '#27272a';
+        
+        const recentTrend = trendData.slice(-7);
+        new Chart(document.getElementById('trendChart'), {
             type: 'bar',
             data: {
-                labels: sortedTrendDates.map(d => new Date(d).toLocaleDateString('en-US', {month: 'short', day: 'numeric'})),
-                datasets: [{ label: 'Study Hours', data: sortedTrendDates.map(d => toHrs(dailyTrendData[d])), backgroundColor: '#10b981', borderRadius: 4 }]
+                labels: recentTrend.map(d => d.date.toLocaleDateString('en-US', {weekday:'short'})),
+                datasets: [{
+                    label: 'Hours',
+                    data: recentTrend.map(d => d.total.toFixed(1)),
+                    backgroundColor: '#6366f1',
+                    borderRadius: 4,
+                    hoverBackgroundColor: '#818cf8',
+                    hoverShadow: '0 0 10px #6366f1'
+                }]
             },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true }, x: { grid: { display: false } } } }
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { 
+                    y: { beginAtZero: true, grid: { display: true, drawBorder: false, color: '#27272a' } }, 
+                    x: { grid: { display: false } } 
+                }
+            }
         });
 
-        lucide.createIcons();
+        const scoreData = rawData.customCards.find(c => c.type === 'line-graph')?.content || [];
+        new Chart(document.getElementById('scoreChart'), {
+            type: 'line',
+            data: {
+                labels: scoreData.map(d => d.name),
+                datasets: [{
+                    label: 'Score',
+                    data: scoreData.map(d => d.total),
+                    borderColor: '#22d3ee',
+                    backgroundColor: 'rgba(34, 211, 238, 0.05)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true,
+                    pointBackgroundColor: '#09090b',
+                    pointBorderColor: '#22d3ee',
+                    pointBorderWidth: 2,
+                    pointHoverRadius: 6,
+                    pointHoverBackgroundColor: '#22d3ee'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { 
+                    y: { beginAtZero: true, grid: { color: '#27272a' } }, 
+                    x: { grid: { display: false } } 
+                }
+            }
+        });
+
+        // --- 4. AI & GEMINI INTEGRATION ---
+        
+        function getStoredKey() {
+            return localStorage.getItem('sval_gemini_key') || "";
+        }
+
+        function toggleSettings() {
+            const modal = document.getElementById('settings-modal');
+            const content = document.getElementById('settings-content');
+            
+            if (modal.classList.contains('hidden')) {
+                // Open & Load Prefs
+                document.getElementById('api-key-input').value = getStoredKey();
+                const shareHours = localStorage.getItem('sval_ai_share_hours') === 'true';
+                document.getElementById('hours-toggle').checked = shareHours;
+
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    content.classList.remove('scale-95', 'opacity-0');
+                    content.classList.add('scale-100', 'opacity-100');
+                }, 10);
+            } else {
+                // Close
+                content.classList.remove('scale-100', 'opacity-100');
+                content.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => modal.classList.add('hidden'), 200);
+            }
+        }
+
+        function saveSettings() {
+            const key = document.getElementById('api-key-input').value.trim();
+            const shareHours = document.getElementById('hours-toggle').checked;
+            
+            localStorage.setItem('sval_ai_share_hours', shareHours);
+
+            if (key) {
+                localStorage.setItem('sval_gemini_key', key);
+            }
+            
+            toggleSettings();
+            forceRefreshAI(); // Refresh to apply new settings immediately
+        }
+
+        function getPrompt() {
+            // 1. Get Settings
+            const shareHours = localStorage.getItem('sval_ai_share_hours') === 'true';
+
+            // 2. Prepare Detailed Test History
+            // Include ALL available test scores chronologically
+            // Added Intelligent Max Marks check
+            const historyStr = scoreData.length > 0 
+                ? scoreData.map(d => {
+                    const max = d.max || d.maxMarks || d.totalMarks || '';
+                    return `${d.name}: ${d.total}${max ? '/' + max : ''}`;
+                }).join(' | ') 
+                : "No tests taken yet.";
+
+            // 3. Syllabus Detail
+            const weakSub = Object.entries(subjects).sort((a,b) => (a[1].m/a[1].t) - (b[1].m/b[1].t))[0]?.[0] || "General";
+            const strongSub = Object.entries(subjects).sort((a,b) => (b[1].m/b[1].t) - (a[1].m/a[1].t))[0]?.[0] || "General";
+
+            // 4. Conditional Hours Data
+            let studyContext = "";
+            if (shareHours) {
+                const totalH = totalStats.Total.toFixed(1);
+                const recentH = recentTrend.reduce((sum, d) => sum + parseFloat(d.total), 0).toFixed(1);
+                studyContext = `- Total Study Hours: ${totalH}\n- Last 7 Days Study: ${recentH} hours`;
+            } else {
+                studyContext = `- Study Hours: [HIDDEN BY USER PREFERENCE]`;
+            }
+            
+            // 5. Construct Prompt
+            return `
+                Role: You are an elite, stoic performance coach for a competitive exam (JEE/NEET/Others) student.
+                
+                Data Context:
+                - Full Test Score History (Chronological): ${historyStr}
+                - Syllabus Weakness: ${weakSub}
+                - Syllabus Strength: ${strongSub}
+                ${studyContext}
+                
+                Task:
+                1. Analyze the trend in the test scores (Improving? Stagnating? Erratic?). 
+                2. If scores are missing, focus on general discipline.
+                3. Provide a brief, punchy "Insight" (Motivational Quote/Observation).
+                4. Provide a specific "Strategy" based on the trajectory and syllabus data.
+                
+                Format:
+                **Insight:** [Sentence]
+                **Strategy:** [Sentence]
+                Keep it brief (max 50 words). No fluff.
+            `;
+        }
+
+        async function fetchGeminiInsight(key) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${key}`;
+            const prompt = getPrompt();
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }]
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.error) throw new Error(data.error.message);
+                
+                return data.candidates[0].content.parts[0].text;
+            } catch (error) {
+                console.error("Gemini Error:", error);
+                return null;
+            }
+        }
+
+        async function loadAI() {
+            const container = document.getElementById('ai-content');
+            const key = getStoredKey();
+            const today = new Date().toDateString();
+            
+            // Check LocalStorage Cache
+            const cached = JSON.parse(localStorage.getItem('sval_ai_cache') || '{}');
+            
+            if (!key) {
+                container.innerHTML = `<p class="text-sm text-zinc-500 italic">Configure API Key to enable AI coaching.</p>`;
+                document.getElementById('api-key-warning').classList.remove('hidden');
+                return;
+            } else {
+                document.getElementById('api-key-warning').classList.add('hidden');
+            }
+
+            // Use Cache if from today
+            if (cached.date === today && cached.text) {
+                container.innerHTML = `<div class="prose text-sm text-zinc-300">${marked.parse(cached.text)}</div>`;
+                return;
+            }
+
+            // Fetch New
+            container.innerHTML = `<div class="flex items-center gap-3 text-zinc-500 text-sm py-4"><div class="loader"></div> Analyzing History...</div>`;
+            
+            const text = await fetchGeminiInsight(key);
+            
+            if (text) {
+                localStorage.setItem('sval_ai_cache', JSON.stringify({ date: today, text: text }));
+                container.innerHTML = `<div class="prose text-sm text-zinc-300 animate-fade-in">${marked.parse(text)}</div>`;
+            } else {
+                container.innerHTML = `<p class="text-sm text-red-400">Connection failed. Check API Key or Quota.</p>`;
+            }
+        }
+        
+        function forceRefreshAI() {
+            localStorage.removeItem('sval_ai_cache');
+            loadAI();
+        }
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            loadAI();
+        });
+
     </script>
 </body>
 </html>
