@@ -237,14 +237,7 @@
             </div>
 
             <!-- Dashboard Row 4: Consistency Trace -->
-            <div class="card p-5">
-                <h3 class="text-sm font-medium text-zinc-300 mb-4 flex items-center gap-2">
-                    <i data-lucide="bar-chart-2" class="w-4 h-4 text-zinc-500"></i> Consistency Trace
-                </h3>
-                <div class="h-48 relative w-full">
-                    <canvas id="trendChart"></canvas>
-                </div>
-            </div>
+            
 
             <!-- Dashboard Row 5: Screenshot Zone (Stacked Vertically) -->
              <div class="space-y-6">
@@ -272,6 +265,16 @@
                     </div>
                 </div>
              </div>
+
+
+             <div class="card p-5">
+                <h3 class="text-sm font-medium text-zinc-300 mb-4 flex items-center gap-2">
+                    <i data-lucide="bar-chart-2" class="w-4 h-4 text-zinc-500"></i> Consistency Trace
+                </h3>
+                <div class="h-48 relative w-full">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
         </div>
 
         <!-- Right Column (Sidebar) -->
@@ -720,7 +723,6 @@
                 - ${timeContext} (Adjust advice based on this timeline!)
                 - Tests: ${historyStr}
                 - Weakest: ${weakSub}, Strongest: ${strongSub}
-                ${studyContext}
                 
                 Task:
                 1. **Vibe Check:** Analyze score trend & subject balance. Are they cooking or getting cooked? Ghosting any subject?
