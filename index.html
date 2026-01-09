@@ -99,6 +99,17 @@
         .transition-max-height {
             transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
         }
+
+        /* Tooltip */
+        .badge-tooltip {
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .group:hover .badge-tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col selection:bg-indigo-500/30">
@@ -155,8 +166,9 @@
                         </div>
                     </div>
 
-                    <div id="ai-wrapper" class="overflow-hidden transition-max-height duration-300 max-h-[500px] opacity-100">
-                        <div id="ai-content" class="min-h-[80px] pt-2">
+                    <!-- Wrapper with max-height and overflow for scrolling -->
+                    <div id="ai-wrapper" class="transition-max-height duration-300 max-h-[500px] opacity-100 overflow-y-auto custom-scrollbar">
+                        <div id="ai-content" class="min-h-[80px] pt-2 pr-2">
                             <div class="flex flex-col gap-2 animate-pulse">
                                 <div class="h-4 bg-zinc-800/50 rounded w-3/4"></div>
                                 <div class="h-4 bg-zinc-800/50 rounded w-full"></div>
@@ -425,7 +437,6 @@
         } else if (diffDays > -20) {
             countdownText = `🏁 ${examType} ${examYear} in Progress`;
         } else {
-             // Maybe next year?
              countdownText = `${examType} ${examYear} Concluded`;
         }
         document.getElementById('exam-countdown').innerText = countdownText;
@@ -466,10 +477,10 @@
         const badges = [
             { id: 'streak', icon: 'flame', color: 'text-orange-500', bg: 'bg-orange-500/10', name: 'On Fire', desc: '7+ Day Streak', earned: currentStreak >= 7 },
             { id: 'hours', icon: 'clock', color: 'text-blue-500', bg: 'bg-blue-500/10', name: 'Dedicated', desc: '100+ Hours', earned: totalStats.Total >= 100 },
-            { id: 'master', icon: 'star', color: 'text-yellow-500', bg: 'bg-yellow-500/10', name: 'Scholar', desc: '20+ Topics', earned: totalMastered >= 20 },
-            { id: 'early', icon: 'sunrise', color: 'text-pink-500', bg: 'bg-pink-500/10', name: 'Early Bird', desc: 'Study < 6AM', earned: true },
-            { id: 'phy', icon: 'atom', color: 'text-indigo-500', bg: 'bg-indigo-500/10', name: 'Physicist', desc: 'Phy > 50h', earned: (totalStats.P/3600) > 50 },
-            { id: 'chem', icon: 'flask-conical', color: 'text-emerald-500', bg: 'bg-emerald-500/10', name: 'Alchemist', desc: 'Chem > 50h', earned: (totalStats.C/3600) > 50 },
+            { id: 'master', icon: 'star', color: 'text-yellow-500', bg: 'bg-yellow-500/10', name: 'Scholar', desc: '20+ Topics Mastered', earned: totalMastered >= 20 },
+            { id: 'early', icon: 'sunrise', color: 'text-pink-500', bg: 'bg-pink-500/10', name: 'Early Bird', desc: 'Study before 6AM', earned: true },
+            { id: 'phy', icon: 'atom', color: 'text-indigo-500', bg: 'bg-indigo-500/10', name: 'Physicist', desc: '50+ Hours Physics', earned: (totalStats.P/3600) > 50 },
+            { id: 'chem', icon: 'flask-conical', color: 'text-emerald-500', bg: 'bg-emerald-500/10', name: 'Alchemist', desc: '50+ Hours Chemistry', earned: (totalStats.C/3600) > 50 },
         ];
         const badgeGrid = document.getElementById('badge-grid');
         let earnedCount = 0;
@@ -477,8 +488,18 @@
             if(badge.earned) earnedCount++;
             const div = document.createElement('div');
             const glowClass = badge.earned ? 'shadow-[0_0_10px_rgba(255,255,255,0.05)] border-zinc-700 bg-zinc-800/80' : 'border-dashed border-zinc-800 bg-zinc-900/30 opacity-40';
-            div.className = `flex flex-col items-center justify-center p-2 rounded-lg border ${glowClass} text-center gap-1.5 transition-all hover:scale-105`;
+            div.className = `group relative flex flex-col items-center justify-center p-2 rounded-lg border ${glowClass} text-center gap-1.5 transition-all hover:scale-105 cursor-help`;
+            
+            // Tooltip HTML
+            const tooltip = `
+                <div class="badge-tooltip absolute bottom-full mb-2 px-2 py-1 bg-zinc-900 border border-zinc-700 rounded text-[10px] text-zinc-300 whitespace-nowrap z-20 shadow-xl">
+                    ${badge.desc}
+                    <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-zinc-700"></div>
+                </div>
+            `;
+
             div.innerHTML = `
+                ${tooltip}
                 <div class="p-1.5 rounded-full ${badge.earned ? badge.bg : 'bg-zinc-800'} ${badge.earned ? 'shadow-inner' : ''}">
                     <i data-lucide="${badge.icon}" class="w-4 h-4 ${badge.earned ? badge.color : 'text-zinc-600'}"></i>
                 </div>
@@ -629,10 +650,12 @@
             if (wrapper.style.maxHeight === '0px') {
                 wrapper.style.maxHeight = '500px';
                 wrapper.style.opacity = '1';
+                wrapper.classList.add('overflow-y-auto'); // Add scroll on open
                 btn.classList.remove('rotate-180');
             } else {
                 wrapper.style.maxHeight = '0px';
                 wrapper.style.opacity = '0';
+                wrapper.classList.remove('overflow-y-auto'); // Remove scroll on close
                 btn.classList.add('rotate-180');
             }
         }
@@ -649,6 +672,18 @@
         function getPrompt() {
             const shareHours = localStorage.getItem('sval_ai_share_hours') === 'true';
             
+            // Pass the DAYS REMAINING to the AI
+            // We calculated `diffDays` globally above for the UI, let's just reuse that logic or grab the text
+            // Better to re-calc for safety inside the function scope or make the variable global.
+            // Using global `diffDays` from the UI population block if available, else re-calc.
+            // Re-calc for safety:
+            const eType = rawData.settings.examType || 'JEE';
+            const eYear = rawData.settings.examYear || '2026';
+            const tDate = new Date(`${eYear}-01-24`);
+            const now = new Date();
+            const dDays = Math.ceil((tDate - now) / (1000 * 60 * 60 * 24));
+            const timeContext = `Time Remaining: ${dDays} Days until ${eType} ${eYear}`;
+
             // Test history
             const historyStr = scoreData.length > 0 
                 ? scoreData.map(d => {
@@ -678,23 +713,24 @@
             }
             
             return `
-                Role: You are a friendly, encouraging IITian senior ('Bhaiya').
-                Tone: Mentor-like, realistic, mix of pro advice and subtle Hinglish flavor ("Bas lage raho", "Phod denge"). 95% English.
+                Role: You are a chill, high-IQ 'Bro' coaching a student for JEE/Competitive Exams. You've cracked it before.
+                Tone: Use Gen Z slang naturally (no cap, fr, locked in, cooked, clutch, W/L ratio). Be realistic but supportive. No Hinglish.
                 
                 Data Context:
+                - ${timeContext} (Adjust advice based on this timeline!)
                 - Tests: ${historyStr}
                 - Weakest: ${weakSub}, Strongest: ${strongSub}
                 ${studyContext}
                 
                 Task:
-                1. **Observation:** Analyze score trend & subject balance. Is the student ignoring a subject (check Study Mix)?
-                2. **Guru Mantra:** Mindset/motivation.
-                3. **Action Plan:** 1-2 specific tips.
+                1. **Vibe Check:** Analyze score trend & subject balance. Are they cooking or getting cooked? Ghosting any subject?
+                2. **Big Brain Energy:** Mindset/motivation to stay locked in.
+                3. **The Meta:** 1-2 specific strat tips to boost the W rate.
                 
                 Format:
-                **Observation:** [Text]
-                **Guru Mantra:** [Text]
-                **Action Plan:** [Text]
+                **Vibe Check:** [Text]
+                **Big Brain Energy:** [Text]
+                **The Meta:** [Text]
             `;
         }
 
@@ -728,7 +764,7 @@
                 return;
             }
 
-            container.innerHTML = `<div class="flex items-center gap-3 text-zinc-500 text-sm py-4"><div class="loader"></div> Asking Bhaiya...</div>`;
+            container.innerHTML = `<div class="flex items-center gap-3 text-zinc-500 text-sm py-4"><div class="loader"></div> Asking Bro...</div>`;
             const text = await fetchGeminiInsight(key);
             
             if (text) {
