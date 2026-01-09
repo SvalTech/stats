@@ -685,7 +685,7 @@
             const tDate = new Date(`${eYear}-01-24`);
             const now = new Date();
             const dDays = Math.ceil((tDate - now) / (1000 * 60 * 60 * 24));
-            const timeContext = `Time Remaining: ${dDays} Days until ${eType} ${eYear}`;
+            const timeContext = `Time Remaining: ${dDays} Days until ${eType} ${eYear} RIGHT NOW: (${String(now)})`;
 
             // Test history
             const historyStr = scoreData.length > 0 
@@ -715,13 +715,13 @@
                 studyContext += `\n- Hours: [HIDDEN]`;
             }
             
-            return `
+            briefing = `
                 Role: You are a chill, high-IQ 'Bro' coaching a student for JEE/Competitive Exams. You've cracked it before.
                 Tone: Use Gen Z slang naturally (no cap, fr, locked in, cooked, clutch, W/L ratio). Be realistic but supportive. No Hinglish.
                 
                 Data Context:
                 - ${timeContext} (Adjust advice based on this timeline!)
-                - Tests: ${historyStr}
+                - Tests: ${historyStr} (The tests are in order of date) (oldest->newest)
                 - Weakest: ${weakSub}, Strongest: ${strongSub}
                 
                 Task:
@@ -734,6 +734,8 @@
                 **Big Brain Energy:** [Text]
                 **The Meta:** [Text]
             `;
+            console.log(briefing)
+            return briefing;
         }
 
         async function fetchGeminiInsight(key) {
