@@ -95,6 +95,10 @@
         /* Toggle Switch */
         .toggle-checkbox:checked { right: 0; border-color: #6366f1; }
         .toggle-checkbox:checked + .toggle-label { background-color: #6366f1; }
+
+        .transition-max-height {
+            transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col selection:bg-indigo-500/30">
@@ -128,38 +132,48 @@
         <!-- Left Column (Main Stats) -->
         <div class="lg:col-span-8 space-y-6">
             
-            <!-- AI Briefing Section -->
+            <!-- AI Notes Section (Collapsible) -->
             <div class="card p-6 relative overflow-hidden group border-indigo-500/20 shadow-[0_0_20px_rgba(79,70,229,0.1)]">
                 <div class="absolute top-0 right-0 w-64 h-64 bg-indigo-600/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none group-hover:bg-indigo-600/20 transition-all duration-700"></div>
                 
                 <div class="relative z-10">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="flex items-center gap-2 text-indigo-400">
-                            <i data-lucide="sparkles" class="w-4 h-4 animate-pulse"></i>
-                            <span class="text-xs font-bold uppercase tracking-wider text-indigo-300 drop-shadow-sm">Bhaiya's Briefing</span>
+                    <div class="flex items-start justify-between mb-2">
+                        <div>
+                            <div class="flex items-center gap-2 text-indigo-400 mb-1">
+                                <i data-lucide="sparkles" class="w-4 h-4 animate-pulse"></i>
+                                <span class="text-xs font-bold uppercase tracking-wider text-indigo-300 drop-shadow-sm">AI Notes</span>
+                            </div>
+                            <div id="exam-countdown" class="text-[10px] font-mono text-zinc-400">Loading Countdown...</div>
                         </div>
-                        <button onclick="forceRefreshAI()" class="text-zinc-500 hover:text-indigo-400 transition-colors" title="Regenerate">
-                            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
-                        </button>
+                        <div class="flex items-center gap-2">
+                            <button onclick="forceRefreshAI()" class="text-zinc-500 hover:text-indigo-400 transition-colors p-1" title="Regenerate">
+                                <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                            </button>
+                            <button onclick="toggleAI()" class="text-zinc-500 hover:text-white transition-colors p-1" id="ai-toggle-btn">
+                                <i data-lucide="chevron-up" class="w-4 h-4"></i>
+                            </button>
+                        </div>
                     </div>
 
-                    <div id="ai-content" class="min-h-[120px]">
-                        <div class="flex flex-col gap-2 animate-pulse">
-                            <div class="h-4 bg-zinc-800/50 rounded w-3/4"></div>
-                            <div class="h-4 bg-zinc-800/50 rounded w-full"></div>
-                            <div class="h-4 bg-zinc-800/50 rounded w-5/6"></div>
+                    <div id="ai-wrapper" class="overflow-hidden transition-max-height duration-300 max-h-[500px] opacity-100">
+                        <div id="ai-content" class="min-h-[80px] pt-2">
+                            <div class="flex flex-col gap-2 animate-pulse">
+                                <div class="h-4 bg-zinc-800/50 rounded w-3/4"></div>
+                                <div class="h-4 bg-zinc-800/50 rounded w-full"></div>
+                                <div class="h-4 bg-zinc-800/50 rounded w-5/6"></div>
+                            </div>
                         </div>
-                    </div>
-                    <div id="api-key-warning" class="hidden mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-md backdrop-blur-sm">
-                        <p class="text-xs text-red-400 flex items-center gap-2">
-                            <i data-lucide="alert-circle" class="w-4 h-4"></i>
-                            API Key missing. Click settings to add.
-                        </p>
+                        <div id="api-key-warning" class="hidden mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-md backdrop-blur-sm">
+                            <p class="text-xs text-red-400 flex items-center gap-2">
+                                <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                                API Key missing. Click settings to add.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Dashboard Row 2: Next Target & Coverage (Moved Here) -->
+            <!-- Dashboard Row 2: Next Target & Coverage -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Upcoming Event -->
                 <div class="card p-5 relative overflow-hidden">
@@ -210,40 +224,42 @@
                 </div>
             </div>
 
-            <!-- Charts Section 1 -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Trend -->
-                <div class="card p-5">
-                    <h3 class="text-sm font-medium text-zinc-300 mb-4 flex items-center gap-2">
-                        <i data-lucide="bar-chart-2" class="w-4 h-4 text-zinc-500"></i> Consistency Trace
-                    </h3>
-                    <div class="h-48 relative w-full">
-                        <canvas id="trendChart"></canvas>
-                    </div>
+            <!-- Dashboard Row 4: Consistency Trace -->
+            <div class="card p-5">
+                <h3 class="text-sm font-medium text-zinc-300 mb-4 flex items-center gap-2">
+                    <i data-lucide="bar-chart-2" class="w-4 h-4 text-zinc-500"></i> Consistency Trace
+                </h3>
+                <div class="h-48 relative w-full">
+                    <canvas id="trendChart"></canvas>
                 </div>
+            </div>
 
-                <!-- Test Scores -->
-                <div class="card p-5">
-                    <h3 class="text-sm font-medium text-zinc-300 mb-4 flex items-center gap-2">
-                        <i data-lucide="line-chart" class="w-4 h-4 text-zinc-500"></i> Score Trajectory
-                    </h3>
-                    <div class="h-48 relative w-full">
+            <!-- Dashboard Row 5: Screenshot Zone (Stacked Vertically) -->
+             <div class="space-y-6">
+                 <!-- Score Trajectory -->
+                <div class="card p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-sm font-medium text-white flex items-center gap-2">
+                            <i data-lucide="line-chart" class="w-4 h-4 text-accent"></i> Score Trajectory
+                        </h3>
+                    </div>
+                    <div class="h-64 relative w-full">
                         <canvas id="scoreChart"></canvas>
                     </div>
                 </div>
-            </div>
 
-             <!-- Deep Dive Analysis (New) -->
-             <div class="card p-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-sm font-medium text-white flex items-center gap-2">
-                        <i data-lucide="microscope" class="w-4 h-4 text-indigo-400"></i> Deep Dive: Subject-wise Performance
-                    </h3>
+                 <!-- Subject Performance -->
+                <div class="card p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-sm font-medium text-white flex items-center gap-2">
+                            <i data-lucide="microscope" class="w-4 h-4 text-indigo-400"></i> Subject-wise Performance
+                        </h3>
+                    </div>
+                    <div class="h-64 relative w-full">
+                        <canvas id="subjectStackChart"></canvas>
+                    </div>
                 </div>
-                <div class="h-56 relative w-full">
-                    <canvas id="subjectStackChart"></canvas>
-                </div>
-            </div>
+             </div>
         </div>
 
         <!-- Right Column (Sidebar) -->
@@ -273,7 +289,7 @@
                 </div>
             </div>
 
-            <!-- Time Allocation Analysis (New) -->
+            <!-- Time Allocation Analysis -->
              <div class="card p-5">
                 <h3 class="text-sm font-medium text-white mb-4 flex items-center gap-2">
                     <i data-lucide="clock" class="w-4 h-4 text-zinc-500"></i> Study Distribution
@@ -337,7 +353,8 @@
             studyLogs: JSON.parse(localStorage.getItem('jeeStudyLogs_v1') || '{}'),
             syllabus: JSON.parse(localStorage.getItem('jee_v3_status') || '{}'),
             tests: JSON.parse(localStorage.getItem('jeePartTests_v2') || '{}'),
-            osData: JSON.parse(localStorage.getItem('jee_os_v4') || '{}')
+            osData: JSON.parse(localStorage.getItem('jee_os_v4') || '{}'),
+            settings: JSON.parse(localStorage.getItem('jeeDashboardSettings_v3') || '{}')
         };
 
         // Aggregation Variables
@@ -392,6 +409,27 @@
             document.getElementById('test-name').innerText = "No Exams Scheduled";
             document.getElementById('test-date').innerText = "Clear Horizon";
         }
+
+        // Final Countdown Logic
+        const examType = rawData.settings.examType || 'JEE';
+        const examYear = rawData.settings.examYear || '2026';
+        // Estimate date: JEE Main usually late Jan. Let's aim for Jan 24th.
+        const targetDate = new Date(`${examYear}-01-24`);
+        const today = new Date();
+        const diffTime = targetDate - today;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        let countdownText = "";
+        if (diffDays > 0) {
+            countdownText = `⏳ ${diffDays} Days to ${examType} ${examYear}`;
+        } else if (diffDays > -20) {
+            countdownText = `🏁 ${examType} ${examYear} in Progress`;
+        } else {
+             // Maybe next year?
+             countdownText = `${examType} ${examYear} Concluded`;
+        }
+        document.getElementById('exam-countdown').innerText = countdownText;
+
 
         // Tasks
         const todoCard = rawData.customCards.find(c => c.type === 'todo');
@@ -582,6 +620,23 @@
                 setTimeout(() => modal.classList.add('hidden'), 200);
             }
         }
+
+        // Toggle AI Notes Section
+        function toggleAI() {
+            const wrapper = document.getElementById('ai-wrapper');
+            const btn = document.getElementById('ai-toggle-btn');
+            
+            if (wrapper.style.maxHeight === '0px') {
+                wrapper.style.maxHeight = '500px';
+                wrapper.style.opacity = '1';
+                btn.classList.remove('rotate-180');
+            } else {
+                wrapper.style.maxHeight = '0px';
+                wrapper.style.opacity = '0';
+                btn.classList.add('rotate-180');
+            }
+        }
+
 
         function saveSettings() {
             const key = document.getElementById('api-key-input').value.trim();
